@@ -4,12 +4,7 @@ import {
   connectingCodes, subscribingCodes
 } from './codes';
 
-import { SockjsTransport } from './transport_sockjs';
 import { WebsocketTransport } from './transport_websocket';
-import { HttpStreamTransport } from './transport_http_stream';
-import { SseTransport } from './transport_sse';
-import { WebtransportTransport } from './transport_webtransport';
-
 import { JsonCodec } from './json';
 
 import {
@@ -169,8 +164,8 @@ export class Centrifuge extends (EventEmitter as new () => TypedEventEmitter<Cli
     }
   }
 
-  /** newSubscription allocates new Subscription to a channel. Since server only allows 
-   * one subscription per channel per client this method throws if client already has 
+  /** newSubscription allocates new Subscription to a channel. Since server only allows
+   * one subscription per channel per client this method throws if client already has
    * channel subscription in internal registry.
    * */
   newSubscription(channel: string, options?: Partial<SubscriptionOptions>): Subscription {
@@ -182,7 +177,7 @@ export class Centrifuge extends (EventEmitter as new () => TypedEventEmitter<Cli
     return sub;
   }
 
-  /** getSubscription returns Subscription if it's registered in the internal 
+  /** getSubscription returns Subscription if it's registered in the internal
    * registry or null. */
   getSubscription(channel: string): Subscription | null {
     return this._getSub(channel);
@@ -204,7 +199,7 @@ export class Centrifuge extends (EventEmitter as new () => TypedEventEmitter<Cli
     return this._subs;
   }
 
-  /** ready returns a Promise which resolves upon client goes to Connected 
+  /** ready returns a Promise which resolves upon client goes to Connected
    * state and rejects in case of client goes to Disconnected or Failed state.
    * Users can provide optional timeout in milliseconds. */
   ready(timeout?: number): Promise<void> {
@@ -260,7 +255,7 @@ export class Centrifuge extends (EventEmitter as new () => TypedEventEmitter<Cli
     this._config.headers = headers;
   }
 
-  /** send asynchronous data to a server (without any response from a server 
+  /** send asynchronous data to a server (without any response from a server
    * expected, see rpc method if you need response). */
   async send(data: any): Promise<void> {
     const cmd = {
@@ -386,7 +381,7 @@ export class Centrifuge extends (EventEmitter as new () => TypedEventEmitter<Cli
     };
   }
 
-  /** start command batching (collect into temporary buffer without sending to a server) 
+  /** start command batching (collect into temporary buffer without sending to a server)
    * until stopBatching called.*/
   startBatching() {
     // start collecting messages without sending them to Centrifuge until flush
@@ -394,7 +389,7 @@ export class Centrifuge extends (EventEmitter as new () => TypedEventEmitter<Cli
     this._batching = true;
   }
 
-  /** stop batching commands and flush collected commands to the 
+  /** stop batching commands and flush collected commands to the
    * network (all in one request/frame).*/
   stopBatching() {
     const self = this;
@@ -628,42 +623,6 @@ export class Centrifuge extends (EventEmitter as new () => TypedEventEmitter<Cli
       }
     }
 
-    let sockjs = null;
-    if (this._config.sockjs !== null) {
-      sockjs = this._config.sockjs;
-    } else {
-      if (typeof globalThis.SockJS !== 'undefined') {
-        sockjs = globalThis.SockJS;
-      }
-    }
-
-    let eventsource: any = null;
-    if (this._config.eventsource !== null) {
-      eventsource = this._config.eventsource;
-    } else {
-      if (typeof globalThis.EventSource !== 'undefined') {
-        eventsource = globalThis.EventSource;
-      }
-    }
-
-    let fetchFunc: any = null;
-    if (this._config.fetch !== null) {
-      fetchFunc = this._config.fetch;
-    } else {
-      if (typeof globalThis.fetch !== 'undefined') {
-        fetchFunc = globalThis.fetch;
-      }
-    }
-
-    let readableStream: any = null;
-    if (this._config.readableStream !== null) {
-      readableStream = this._config.readableStream;
-    } else {
-      if (typeof globalThis.ReadableStream !== 'undefined') {
-        readableStream = globalThis.ReadableStream;
-      }
-    }
-
     if (!this._emulation) {
       if (startsWith(this._endpoint, 'http')) {
         throw new Error('Provide explicit transport endpoints configuration in case of using HTTP (i.e. using array of TransportEndpoint instead of a single string), or use ws(s):// scheme in an endpoint if you aimed using WebSocket transport');
@@ -697,59 +656,6 @@ export class Centrifuge extends (EventEmitter as new () => TypedEventEmitter<Cli
           });
           if (!this._transport.supported()) {
             this._debug('websocket transport not available');
-            this._currentTransportIndex++;
-            count++;
-            continue;
-          }
-        } else if (transportName === 'webtransport') {
-          this._debug('trying webtransport transport');
-          this._transport = new WebtransportTransport(transportEndpoint, {
-            webtransport: globalThis.WebTransport,
-            decoder: this._codec,
-            encoder: this._codec
-          });
-          if (!this._transport.supported()) {
-            this._debug('webtransport transport not available');
-            this._currentTransportIndex++;
-            count++;
-            continue;
-          }
-        } else if (transportName === 'http_stream') {
-          this._debug('trying http_stream transport');
-          this._transport = new HttpStreamTransport(transportEndpoint, {
-            fetch: fetchFunc,
-            readableStream: readableStream,
-            emulationEndpoint: this._config.emulationEndpoint,
-            decoder: this._codec,
-            encoder: this._codec
-          });
-          if (!this._transport.supported()) {
-            this._debug('http_stream transport not available');
-            this._currentTransportIndex++;
-            count++;
-            continue;
-          }
-        } else if (transportName === 'sse') {
-          this._debug('trying sse transport');
-          this._transport = new SseTransport(transportEndpoint, {
-            eventsource: eventsource,
-            fetch: fetchFunc,
-            emulationEndpoint: this._config.emulationEndpoint,
-          });
-          if (!this._transport.supported()) {
-            this._debug('sse transport not available');
-            this._currentTransportIndex++;
-            count++;
-            continue;
-          }
-        } else if (transportName === 'sockjs') {
-          this._debug('trying sockjs');
-          this._transport = new SockjsTransport(transportEndpoint, {
-            sockjs: sockjs,
-            sockjsOptions: this._config.sockjsOptions
-          });
-          if (!this._transport.supported()) {
-            this._debug('sockjs transport not available');
             this._currentTransportIndex++;
             count++;
             continue;

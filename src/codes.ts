@@ -1,4 +1,4 @@
-export enum errorCodes {
+export const enum errorCodes {
   timeout = 1,
   transportClosed = 2,
   clientDisconnected = 3,
@@ -13,7 +13,7 @@ export enum errorCodes {
   badConfiguration = 12,
 }
 
-export enum connectingCodes {
+export const enum connectingCodes {
   connectCalled = 0,
   transportClosed = 1,
   noPing = 2,
@@ -21,19 +21,19 @@ export enum connectingCodes {
   unsubscribeError = 4
 }
 
-export enum disconnectedCodes {
+export const enum disconnectedCodes {
   disconnectCalled = 0,
   unauthorized = 1,
   badProtocol = 2,
   messageSizeLimit = 3
 }
 
-export enum subscribingCodes {
+export const enum subscribingCodes {
   subscribeCalled = 0,
   transportClosed = 1
 }
 
-export enum unsubscribedCodes {
+export const enum unsubscribedCodes {
   unsubscribeCalled = 0,
   unauthorized = 1,
   clientClosed = 2
