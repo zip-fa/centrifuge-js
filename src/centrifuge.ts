@@ -441,7 +441,11 @@ export class Centrifuge extends (EventEmitter as new () => TypedEventEmitter<Cli
     this._formatOverride();
 
     if (this._config.debug === true ||
-      (typeof localStorage !== 'undefined' && localStorage.getItem('centrifuge.debug'))) {
+      (typeof localStorage !== 'undefined' &&
+        localStorage &&
+        typeof localStorage.getItem === 'function' &&
+        localStorage.getItem('centrifuge.debug')
+      )) {
       this._debugEnabled = true;
     }
 
